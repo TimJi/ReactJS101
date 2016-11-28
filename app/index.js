@@ -1,34 +1,49 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-class Timer extends React.Component {
+// TodoApp 元件中包含了顯示 Todo 的 TodoList 元件，Todo 的內容透過 props 傳入 TodoList 中。由於 TodoList 僅單純 Render UI 不涉及內部 state 操作是 stateless component，所以使用 Functional Component 寫法。需要特別注意的是這邊我們用 map function 來迭代 Todos，需要留意的是每個迭代的元素必須要有 unique key 不然會發生錯誤（可以用自定義 id，或是使用 map function 的第二個參數 index）
+const TodoList = (props) => (
+    <ul>
+        {
+            props.items.map((item) => (
+                <li key={item.id}>{item.text}</li>
+            ))
+        }
+    </ul>
+)
+
+// 整個 App 的主要元件，這邊比較重要的是事件處理的部份，內部有
+class TodoApp extends React.Component {
     constructor(props) {
         super(props);
-        // 與 ES5 React.createClass({}) 不同的是 component 內自定義的方法需要自行綁定 this context，或是使用 arrow function
-        this.tick = this.tick.bind(this);
-        // 初始 state，等於 ES5 中的 getInitialState
+        this.onChange = this.onChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
         this.state = {
-            secondsElapsed: 0,
+            items: [],
+            text: '',
         }
     }
-    // 累加器方法，每一秒被呼叫後就會使用 setState() 更新內部 state，讓 Component 重新 render
-    tick() {
-        this.setState({secondsElapsed: this.state.secondsElapsed + 1});
+    onChange(e) {
+        this.setState({text: e.target.value});
     }
-    // componentDidMount 為 component 生命週期中階段 component 已插入節點的階段，通常一些非同步操作都會放置在這個階段。這便是每1秒鐘會去呼叫 tick 方法
-    componentDidMount() {
-        this.interval = setInterval(this.tick, 1000);
+    handleSubmit(e) {
+        e.preventDefault();
+        const nextItems = this.state.items.concat([{text: this.state.text, id: Date.now()}]);
+        const nextText = '';
+        this.setState({items: nextItems, text: nextText});
     }
-    // componentWillUnmount 為 component 生命週期中 component 即將移出插入的節點的階段。這邊移除了 setInterval 效力
-    componentWillUnmount() {
-        clearInterval(this.interval);
-    }
-    // render 為 class Component 中唯一需要定義的方法，其回傳 component 欲顯示的內容
     render() {
         return (
-          <div><h1>Seconds Elapsed: {this.state.secondsElapsed}</h1></div>
+          <div>
+            <h3>TODO</h3>
+            <TodoList items={this.state.items} />
+            <form onSubmit={this.handleSubmit}>
+              <input onChange={this.onChange} value={this.state.text} />
+              <button>{'Add #' + (this.state.items.length + 1)}</button>
+            </form>
+          </div>
         );
     }
 }
 
-ReactDOM.render(<Timer />, document.getElementById('app'));
+ReactDOM.render(<TodoApp />, document.getElementById('app'));
