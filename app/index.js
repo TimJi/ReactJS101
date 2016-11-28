@@ -1,41 +1,40 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-class MyComponent extends React.Component {
-  constructor(props) {
-    super(props);
-    console.log('constructor');
-    this.handleClick = this.handleClick.bind(this);
-    this.state = {
-      name: 'Mark',
+class UserGithub extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+          username: '',
+          githubtUrl: '',
+          avatarUrl: '',
+        }
     }
-  }
-  handleClick() {
-    this.setState({'name': 'Zuck'});
-  }
-  componentWillMount() {
-    console.log('componentWillMount');
-  }
-  componentDidMount() {
-    console.log('componentDidMount');
-  }
-  componentWillReceiveProps() {
-    console.log('componentWillReceiveProps');
-  }
-  componentWillUpdate() {
-    console.log('componentWillUpdate');
-  }
-  componentDidUpdate() {
-    console.log('componentDidUpdate');
-  }
-  componentWillUnmount() {
-    console.log('componentWillUnmount');
-  }
-  render() {
-    return (
-      <div onClick={this.handleClick}>Hi, {this.state.name}</div>
-    );
-  }
+    componentDidMount() {
+        $.get(this.props.source, (result) => {
+            console.log(result);
+            const data = result;
+            if (data) {
+              this.setState({
+                    username: data.name,
+                    githubtUrl: data.html_url,
+                    avatarUrl: data.avatar_url
+              });
+            }
+        });
+    }
+    render() {
+        return (
+          <div>
+            <h3>{this.state.username}</h3>
+            <img src={this.state.avatarUrl} />
+            <a href={this.state.githubtUrl}>Github Link</a>.
+          </div>
+        );
+    }
 }
 
-ReactDOM.render(<MyComponent />, document.getElementById('app'));
+ReactDOM.render(
+  <UserGithub source="https://api.github.com/users/TimJi" />,
+  document.getElementById('app')
+);
